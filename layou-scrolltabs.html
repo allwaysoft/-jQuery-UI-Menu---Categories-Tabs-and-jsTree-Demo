@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>jQuery UI Menu - Categories</title>
+        <style>
+            #header {
+                background-color:black;
+                color:white;
+                text-align:center;
+                padding:5px;
+            }
+            #nav {
+                line-height:30px;
+                background-color:#eeeeee;
+
+                width:200px;
+                float:left;
+                padding:5px;
+            }
+            #section {
+                width:1100px;
+                float:left;
+                padding:10px;
+            }
+            #footer {
+                background-color:black;
+                color:white;
+                clear:both;
+                text-align:center;
+                padding:5px;
+            }
+        </style>
+        <link rel="stylesheet" href="jquery-ui.css">
+        <link rel="stylesheet" href="/resources/demos/style.css">
+        <link rel="stylesheet" href="themes/default/style.min.css">
+        <link rel="stylesheet" href="themes/default-dark/style.min.css">
+
+        <style>
+            #dialog label, #dialog input {
+                display:block;
+            }
+            #dialog label {
+                margin-top: 0.5em;
+            }
+            #dialog input, #dialog textarea {
+                width: 95%;
+            }
+            #tabs {
+                margin-top: 1em;
+            }
+            #tabs li .ui-icon-close {
+                float: left;
+                margin: 0.4em 0.2em 0 0;
+                cursor: pointer;
+            }
+            #add_tab {
+                cursor: pointer;
+            }
+        </style>
+        <script src="jquery-3.6.0.js"></script>
+        <script src="jquery-ui.js"></script>
+        <script src="jquery.ui.scrolltabs.js"></script>
+        <script src="jstree.js"></script>
+        <style>
+            .ui-scroll-tabs-header:after {
+                content: "";
+                display: table;
+                clear: both;
+            }
+
+            .ui-scroll-tabs-view {
+                z-index: 1;
+                overflow: hidden;
+            }
+
+            .ui-scroll-tabs-view .ui-widget-header {
+                border: none;
+                background: transparent;
+            }
+
+            .ui-scroll-tabs-header {
+                position: relative;
+                overflow: hidden;
+            }
+
+            .ui-scroll-tabs-header .stNavMain {
+                position: absolute;
+                top: 0;
+                z-index: 2;
+                height: 100%;
+                opacity: 0;
+                transition: left .5s, right .5s, opacity .8s;
+                transition-timing-function: swing;
+            }
+
+            .ui-scroll-tabs-header .stNavMain button {
+                height: 90%;
+            }
+
+            .ui-scroll-tabs-header .stNavMainLeft {
+                left: -250px;
+            }
+
+            .ui-scroll-tabs-header .stNavMainLeft.stNavVisible {
+                left: 0;
+                opacity: 1;
+            }
+
+            .ui-scroll-tabs-header .stNavMainRight {
+                right: -250px;
+            }
+
+            .ui-scroll-tabs-header .stNavMainRight.stNavVisible {
+                right: 0;
+                opacity: 1;
+            }
+
+            .ui-scroll-tabs-header ul.ui-tabs-nav {
+                position: relative;
+                white-space: nowrap;
+            }
+
+            .ui-scroll-tabs-header ul.ui-tabs-nav li {
+                display: inline-block;
+                float: none;
+            }
+
+            .ui-scroll-tabs-header ul.ui-tabs-nav li.stHasCloseBtn a {
+                padding-right: 0.5em;
+            }
+
+            .ui-scroll-tabs-header ul.ui-tabs-nav li span.stCloseBtn {
+                float: left;
+                padding: 4px 2px;
+                border: none;
+                cursor: pointer;
+            }
+        </style>
+        <script>
+            $(function () {
+                $("#menu").menu({
+                    items: "> :not(.ui-widget-header)"
+                });
+            });
+        </script>
+        <style>
+            .ui-menu {
+                width: 200px;
+            }
+            .ui-widget-header {
+                padding: 0.2em;
+            }
+        </style>
+
+
+        <script>
+            $(function () {
+                var tabTitle = $("#tab_title"),
+                        tabContent = $("#tab_content"),
+                        tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>",
+                        tabCounter = 2;
+                var tabs = $("#tabs").scrollTabs({
+                    scrollOptions: {
+                        customNavNext: '#n',
+                        customNavPrev: '#p',
+                        customNavFirst: '#f',
+                        customNavLast: '#l',
+                        easing: 'swing',
+                        enableDebug: false,
+                        closable: true,
+                        showFirstLastArrows: true,
+                        selectTabAfterScroll: true
+                    }
+                });
+                // Modal dialog init: custom buttons and a "close" callback resetting the form inside
+                var dialog = $("#dialog").dialog({
+                    autoOpen: false,
+                    modal: true,
+                    buttons: {
+                        Add: function () {
+                            addTab();
+                            $(this).dialog("close");
+                        },
+                        Cancel: function () {
+                            $(this).dialog("close");
+                        }
+                    },
+                    close: function () {
+                        form[ 0 ].reset();
+                    }
+                });
+                // AddTab form: calls addTab function on submit and closes the dialog
+                var form = dialog.find("form").on("submit", function (event) {
+                    addTab();
+                    dialog.dialog("close");
+                    event.preventDefault();
+                });
+                // Actual addTab function: adds new tab using the input from the form above
+                function addTab() {
+                    var label = tabTitle.val() || "Tab " + tabCounter,
+                            id = "tabs-" + tabCounter,
+                            li = $(tabTemplate.replace(/#\{href\}/g, "#" + id).replace(/#\{label\}/g, label)),
+                            tabContentHtml = tabContent.val() || "Tab " + tabCounter + " content.";
+                    tabs.find(".ui-tabs-nav").append(li);
+                    tabs.append("<div id='" + id + "'><p>" + tabContentHtml + "</p></div>");
+                    tabs.tabs("refresh");
+                    tabCounter++;
+                }
+
+
+                // Close icon: removing the tab on click
+                tabs.on("click", "span.ui-icon-close", function () {
+                    var panelId = $(this).closest("li").remove().attr("aria-controls");
+                    $("#" + panelId).remove();
+                    tabs.tabs("refresh");
+                });
+                tabs.on("keyup", function (event) {
+                    if (event.altKey && event.keyCode === $.ui.keyCode.BACKSPACE) {
+                        var panelId = tabs.find(".ui-tabs-active").remove().attr("aria-controls");
+                        $("#" + panelId).remove();
+                        tabs.tabs("refresh");
+                    }
+                });
+                $("#menu").menu({
+                    select: function (event, ui) {
+                        console.log(ui);
+                        console.log(ui.item[0].innerText);
+                        var tab_exist = false;
+                        for (i = 0; i < $("#tabs").scrollTabs("instance").tabs.length; i++) {
+                            console.log($("#tabs").scrollTabs("instance").tabs[i].innerText);
+                            if ((ui.item[0].innerText + "\nClose") === $("#tabs").scrollTabs("instance").tabs[i].innerText) {
+                                console.log("this tab is exist!");
+                                $('#tabs').scrollTabs("option", "active", i);
+                                tab_exist = true;
+                            }
+                        }
+                        if (tab_exist === false) {
+                            $('#tabs').data('uiScrollTabs')
+                                    .addTab(ui.item[0].innerText, ui.item[0].innerText + '<br>' +
+                                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' +
+                                            ' Quisque hendrerit vulputate porttitor. Fusce purus leo, faucibus' +
+                                            ' a sagittis congue, molestie tempus felis. Donec convallis semper enim,' +
+                                            ' varius sagittis eros imperdiet in. Vivamus semper sem at metus mattis' +
+                                            ' a aliquam neque ornare. Proin sed semper lacus.');
+                        }
+                    }
+                });
+                $('#add_tab').on('click', function (e) {
+
+                    $('#tabs').data('uiScrollTabs')
+                            .addTab(new Date(), new Date() + '<br>' +
+                                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' +
+                                    ' Quisque hendrerit vulputate porttitor. Fusce purus leo, faucibus' +
+                                    ' a sagittis congue, molestie tempus felis. Donec convallis semper enim,' +
+                                    ' varius sagittis eros imperdiet in. Vivamus semper sem at metus mattis' +
+                                    ' a aliquam neque ornare. Proin sed semper lacus.');
+                });
+                $('#active_tab').on('click', function (e) {
+
+                    $('#tabs').scrollTabs("option", "active", 2);
+                    console.log($("#tabs").scrollTabs("instance").tabs);
+                    for (i = 0; i < $("#tabs").scrollTabs("instance").tabs.length; i++) {
+                        console.log($("#tabs").scrollTabs("instance").tabs[i].innerText);
+                    }
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+
+        <div id="header">
+            <h1>jQuery UI Menu - Categories, Tabs and jsTree Demo</h1>
+        </div>
+
+        <div id="nav">
+
+            <div id="html" class="demo">
+                <ul>
+                    <li data-jstree='{ "opened" : true }'>Root node
+                        <ul>
+                            <li data-jstree='{ "selected" : true }'>Child node 1</li>
+                            <li>Child node 2</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <script>
+                $('#html').jstree().bind("select_node.jstree", function (e, data) {
+                    console.log(data.instance.get_node(data.selected).text);
+                    var tab_exist = false;
+                    for (i = 0; i < $("#tabs").scrollTabs("instance").tabs.length; i++) {
+                        console.log($("#tabs").scrollTabs("instance").tabs[i].innerText);
+                        if ((data.instance.get_node(data.selected).text + "\nClose") === $("#tabs").scrollTabs("instance").tabs[i].innerText) {
+                            console.log("this tab is exist!");
+                            $('#tabs').scrollTabs("option", "active", i);
+                            tab_exist = true;
+                        }
+                    }
+                    if (tab_exist === false) {
+                        $('#tabs').data('uiScrollTabs')
+                                .addTab(data.instance.get_node(data.selected).text, data.instance.get_node(data.selected).text + '<br>' +
+                                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' +
+                                        ' Quisque hendrerit vulputate porttitor. Fusce purus leo, faucibus' +
+                                        ' a sagittis congue, molestie tempus felis. Donec convallis semper enim,' +
+                                        ' varius sagittis eros imperdiet in. Vivamus semper sem at metus mattis' +
+                                        ' a aliquam neque ornare. Proin sed semper lacus.');
+                    }
+                });
+
+            </script>
+
+            <ul id="menu">
+                <li class="ui-widget-header"><div>Category 1</div></li>
+                <li><div>Option 1</div></li>
+                <li><div>Option 2</div></li>
+                <li><div>Option 3</div></li>
+                <li class="ui-widget-header"><div>Category 2</div></li>
+                <li><div>Option 4</div></li>
+                <li><div>Option 5</div></li>
+                <li><div>Option 6</div></li>
+            </ul>
+
+            <span id = "result"></span>
+        </div>
+
+        <div id="section">
+            <div id="dialog" title="Tab data">
+                <form>
+                    <fieldset class="ui-helper-reset">
+                        <label for="tab_title">Title</label>
+                        <input type="text" name="tab_title" id="tab_title" value="Tab Title" class="ui-widget-content ui-corner-all">
+                        <label for="tab_content">Content</label>
+                        <textarea name="tab_content" id="tab_content" class="ui-widget-content ui-corner-all">Tab content</textarea>
+                    </fieldset>
+                </form>
+            </div>
+
+            <button id="add_tab">Add Tab</button>
+            <button id="active_tab">Active Tab</button>
+
+            <div id="tabs">
+                <ul role="tablist">
+                    <li role="tab"><a href="#tabs-1" role="presentation">Tab 1</a></li>
+                    <li role="tab"><a href="#tabs-2" role="presentation">This is tab 2</a></li>
+                    <li role="tab"><a href="#tabs-3" role="presentation">This is tab number 3</a></li>
+
+                </ul>
+                <div id="tabs-1" role="tabpanel">
+                    Tab 1
+                </div>
+                <div id="tabs-2" role="tabpanel">
+                    Tab 2
+                </div>
+                <div id="tabs-3" role="tabpanel">
+                    Tab 3
+                </div>
+            </div>
+        </div>
+
+        <div id="footer">
+            Copyright  </div>
+
+    </body>
+</html>
